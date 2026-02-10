@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pottbrock">
+<meta name="theme-color" content="#e8ecf4">
+<title>Pottbrock Recruiting</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦷</text></svg>">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+    background: linear-gradient(175deg, #e8ecf4 0%, #d5dce8 25%, #e2dff0 50%, #dce8e4 75%, #e8ecf4 100%);
+    color: #1a1a2e;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+  }
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+  *::-webkit-scrollbar { display: none; }
+
+  /* ── Animations ── */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+  /* ── Glass Utility ── */
+  .glass {
+    background: rgba(255,255,255,0.55);
+    backdrop-filter: blur(40px) saturate(1.8);
+    -webkit-backdrop-filter: blur(40px) saturate(1.8);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+  .glass-heavy {
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(40px) saturate(1.8);
+    -webkit-backdrop-filter: blur(40px) saturate(1.8);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+  .glass-sheet {
+    background: rgba(248,248,252,0.97);
+    backdrop-filter: blur(50px) saturate(2);
+    -webkit-backdrop-filter: blur(50px) saturate(2);
+    box-shadow: 0 -8px 50px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+
+  /* ── Login Screen ── */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(175deg, #e8ecf4 0%, #d5dce8 25%, #e2dff0 50%, #dce8e4 75%, #e8ecf4 100%);
+    animation: fadeIn 0.4s ease;
+  }
+  #login-screen.hidden { display: none; }
+  .login-logo {
+    width: 88px; height: 88px; border-radius: 24px;
+    background: linear-gradient(135deg, #007AFF, #5856D6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 44px; margin-bottom: 24px;
+    box-shadow: 0 12px 40px rgba(0,122,255,0.3);
+    animation: float 4s ease-in-out infinite;
+  }
+  .login-title {
+    font-size: 28px; font-weight: 750; letter-spacing: -0.04em;
+    color: #1a1a2e; margin-bottom: 4px;
+  }
+  .login-subtitle {
+    font-size: 14px; color: rgba(0,0,0,0.38); font-weight: 500;
+    margin-bottom: 36px;
+  }
+  .login-box {
+    width: 300px; padding: 28px; border-radius: 24px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .login-input {
+    width: 100%; padding: 14px 18px; border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: rgba(255,255,255,0.65);
+    font-size: 16px; font-family: inherit; color: #1a1a2e;
+    outline: none; transition: border-color 0.2s ease;
+    text-align: center; letter-spacing: 0.1em;
+  }
+  .login-input:focus { border-color: rgba(0,122,255,0.45); }
+  .login-input::placeholder { letter-spacing: 0; color: rgba(0,0,0,0.3); }
+  .login-btn {
+    padding: 15px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, #007AFF, #5856D6);
+    color: #fff; font-size: 16px; font-weight: 700;
+    cursor: pointer; letter-spacing: -0.01em;
+    box-shadow: 0 4px 18px rgba(0,122,255,0.3);
+    transition: all 0.2s ease;
+  }
+  .login-btn:active { transform: scale(0.97); }
+  .login-error {
+    text-align: center; font-size: 13px; color: #FF3B30;
+    font-weight: 600; min-height: 18px;
+  }
+
+  /* ── App Shell ── */
+  #app { height: 100vh; display: flex; flex-direction: column; overflow: hidden; max-width: 500px; margin: 0 auto; width: 100%; }
+  #app.hidden { display: none; }
+
+  /* ── Header ── */
+  .app-header {
+    padding: 14px 18px; display: flex; align-items: center;
+    justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.04);
+  }
+  .header-left { display: flex; align-items: center; gap: 11px; }
+  .header-icon {
+    width: 36px; height: 36px; border-radius: 12px;
+    background: linear-gradient(135deg, #007AFF, #5856D6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; box-shadow: 0 3px 12px rgba(0,122,255,0.25);
+  }
+  .header-title { font-size: 17px; font-weight: 750; letter-spacing: -0.03em; }
+  .header-sub { font-size: 10px; color: rgba(0,0,0,0.35); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .header-actions { display: flex; gap: 8px; }
+  .btn-add, .btn-logout {
+    width: 38px; height: 38px; border-radius: 12px; border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px; transition: all 0.15s ease;
+  }
+  .btn-add {
+    background: linear-gradient(135deg, #007AFF, #5856D6); color: #fff;
+    box-shadow: 0 3px 12px rgba(0,122,255,0.25); font-weight: 300; font-size: 22px;
+  }
+  .btn-logout {
+    background: rgba(0,0,0,0.04); color: rgba(0,0,0,0.4); font-size: 16px;
+  }
+
+  /* ── Status Bar ── */
+  .status-bar {
+    display: flex; gap: 2px; padding: 8px 8px 6px;
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .status-tab {
+    flex: 1 0 0; min-width: 48px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 5px 2px 6px; border-radius: 12px; border: none;
+    background: transparent; cursor: pointer; position: relative;
+    transition: all 0.3s cubic-bezier(.32,.72,.0,1);
+  }
+  .status-tab.active { background: var(--tab-bg); }
+  .status-dot {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    transition: all 0.3s cubic-bezier(.32,.72,.0,1);
+  }
+  .status-dot.inactive { background: rgba(0,0,0,0.06); color: rgba(0,0,0,0.35); }
+  .status-label {
+    font-size: 8.5px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.03em; white-space: nowrap; transition: color 0.3s ease;
+  }
+  .status-indicator {
+    position: absolute; bottom: 0; left: 25%; right: 25%;
+    height: 2.5px; border-radius: 99px; transition: all 0.3s ease;
+  }
+
+  /* ── Columns ── */
+  .columns-viewport { flex: 1; overflow: hidden; position: relative; }
+  .columns-track {
+    display: flex; height: 100%;
+    transition: transform 0.45s cubic-bezier(.32,.72,.0,1);
+  }
+  .column-pane {
+    min-width: 100%; width: 100%; height: 100%;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 0 0 100px;
+  }
+  .column-header { padding: 18px 20px 10px; display: flex; align-items: center; gap: 10px; }
+  .column-icon { font-size: 24px; }
+  .column-title { font-size: 18px; font-weight: 700; letter-spacing: -0.03em; }
+  .column-count { font-size: 13px; color: rgba(0,0,0,0.35); margin-top: 1px; font-weight: 450; }
+  .column-empty {
+    text-align: center; padding: 52px 20px;
+    color: rgba(0,0,0,0.18); font-size: 15px; font-weight: 500;
+  }
+  .column-empty-icon { font-size: 40px; margin-bottom: 10px; }
+  .cards-list { padding: 0 14px; display: flex; flex-direction: column; gap: 10px; }
+
+  /* ── Card ── */
+  .card {
+    border-radius: 20px; padding: 16px 18px; cursor: pointer;
+    transition: all 0.2s cubic-bezier(.32,.72,.0,1);
+  }
+  .card:active { transform: scale(0.98); }
+  .card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .card-avatar {
+    width: 44px; height: 44px; border-radius: 22px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700;
+  }
+  .card-name {
+    font-weight: 650; font-size: 15.5px; letter-spacing: -0.02em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card-meta { font-size: 13px; color: rgba(0,0,0,0.4); margin-top: 1px; font-weight: 450; }
+  .card-time { font-size: 11px; color: rgba(0,0,0,0.28); flex-shrink: 0; font-weight: 500; }
+  .card-actions { display: flex; gap: 7px; align-items: center; }
+  .card-btn {
+    padding: 5px 12px; border-radius: 99px; font-size: 12px; font-weight: 600;
+    text-decoration: none; display: flex; align-items: center; gap: 4px;
+    transition: all 0.15s ease;
+  }
+  .card-btn:active { transform: scale(0.95); }
+
+  /* ── Dots ── */
+  .swipe-dots {
+    position: fixed; bottom: 18px; left: 0; right: 0;
+    display: flex; justify-content: center; gap: 6px; pointer-events: none;
+  }
+  .swipe-dot {
+    height: 7px; border-radius: 99px;
+    transition: all 0.35s cubic-bezier(.32,.72,.0,1);
+  }
+
+  /* ── Modal Overlay ── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: flex; align-items: flex-end; justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal-sheet {
+    border-radius: 28px 28px 0 0; padding: 8px 24px 36px;
+    width: 100%; max-width: 500px; max-height: 93vh; overflow-y: auto;
+    animation: slideUp 0.4s cubic-bezier(.32,.72,.0,1);
+  }
+  .modal-handle {
+    display: flex; justify-content: center; padding: 8px 0 18px;
+  }
+  .modal-handle-bar {
+    width: 36px; height: 5px; border-radius: 99px; background: rgba(0,0,0,0.12);
+  }
+  .modal-title { font-size: 21px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 4px; }
+
+  /* ── Detail Contact Buttons ── */
+  .contact-row { display: flex; gap: 10px; margin-bottom: 22px; }
+  .contact-btn {
+    flex: 1; padding: 14px 8px; border-radius: 18px; text-align: center;
+    text-decoration: none; font-size: 12px; font-weight: 650;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    transition: all 0.15s ease;
+  }
+  .contact-btn:active { transform: scale(0.96); }
+  .contact-icon { font-size: 22px; }
+
+  /* ── Info Grid ── */
+  .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px;
+    margin-bottom: 22px; padding: 18px; border-radius: 20px;
+    background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05);
+  }
+  .info-label { color: rgba(0,0,0,0.35); font-size: 10px; font-weight: 650; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .info-value { color: #1a1a2e; font-weight: 550; font-size: 13.5px; }
+
+  /* ── Textarea ── */
+  .notes-input {
+    width: 100%; background: rgba(255,255,255,0.65);
+    border: 1px solid rgba(0,0,0,0.08); border-radius: 16px;
+    padding: 14px 16px; color: #1a1a2e; font-size: 15px;
+    resize: vertical; outline: none; font-family: inherit;
+    line-height: 1.5; transition: border-color 0.2s ease;
+  }
+  .notes-input:focus { border-color: rgba(0,122,255,0.4); }
+
+  /* ── Status Pills ── */
+  .status-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+  .status-pill {
+    padding: 8px 15px; border-radius: 99px; font-size: 12.5px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s ease; border-width: 2px; border-style: solid;
+  }
+  .status-pill:active { transform: scale(0.95); }
+
+  /* ── Action Buttons ── */
+  .btn-save {
+    flex: 1; padding: 15px; border-radius: 16px; border: none;
+    background: linear-gradient(135deg, #007AFF, #0a84ff);
+    color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,122,255,0.3); letter-spacing: -0.01em;
+  }
+  .btn-delete {
+    padding: 15px 22px; border-radius: 16px;
+    border: 1px solid rgba(255,59,48,0.2); background: rgba(255,59,48,0.08);
+    color: #FF3B30; font-size: 16px; font-weight: 600; cursor: pointer;
+  }
+  .btn-save:active, .btn-delete:active { transform: scale(0.97); }
+
+  .section-label { color: rgba(0,0,0,0.35); font-size: 10px; font-weight: 650; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+
+<!-- ═══════ LOGIN SCREEN ═══════ -->
+<div id="login-screen">
+  <div class="login-logo">🦷</div>
+  <div class="login-title">Pottbrock</div>
+  <div class="login-subtitle">ZFA Recruiting Dashboard</div>
+  <div class="login-box glass">
+    <input class="login-input" type="password" id="pw-input" placeholder="Passwort eingeben" autocomplete="current-password">
+    <button class="login-btn" id="pw-btn">Anmelden</button>
+    <div class="login-error" id="pw-error"></div>
+  </div>
+</div>
+
+<!-- ═══════ MAIN APP ═══════ -->
+<div id="app" class="hidden">
+
+  <!-- Header -->
+  <div class="app-header glass-heavy" style="border-radius:0; border:none;">
+    <div class="header-left">
+      <div class="header-icon">🦷</div>
+      <div>
+        <div class="header-title">Pottbrock</div>
+        <div class="header-sub">ZFA Recruiting</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-logout" id="btn-logout" title="Abmelden">🔒</button>
+      <button class="btn-add" id="btn-import">+</button>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar glass-heavy" id="status-bar" style="border-radius:0; border:none;"></div>
+
+  <!-- Columns -->
+  <div class="columns-viewport" id="swipe-area">
+    <div class="columns-track" id="columns-track"></div>
+  </div>
+
+  <!-- Dots -->
+  <div class="swipe-dots" id="swipe-dots"></div>
+</div>
+
+<!-- ═══════ DETAIL MODAL ═══════ -->
+<div class="modal-overlay hidden" id="detail-modal">
+  <div class="modal-sheet glass-sheet" id="detail-sheet"></div>
+</div>
+
+<!-- ═══════ IMPORT MODAL ═══════ -->
+<div class="modal-overlay hidden" id="import-modal">
+  <div class="modal-sheet glass-sheet">
+    <div class="modal-handle"><div class="modal-handle-bar"></div></div>
+    <div class="modal-title">E-Mail importieren</div>
+    <p style="color:rgba(0,0,0,0.4);font-size:14px;margin-bottom:18px;font-weight:450;">Text der Bewerbungs-E-Mail einfügen:</p>
+    <textarea id="import-text" class="notes-input" rows="7" style="font-family:'SF Mono',Menlo,monospace;font-size:14px;"
+      placeholder="Name: Max Mustermann
+Email: max@example.de
+Telefon: +49123456789
+Ausbildung: ja
+Standort: düsseldorf
+Anstellung: vollzeit
+Erreichbarkeit: vormittags"></textarea>
+    <div id="import-preview" style="margin-top:14px;display:none;"></div>
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button id="import-cancel" style="flex:1;padding:15px;border-radius:16px;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.5);color:rgba(0,0,0,0.5);font-size:15px;font-weight:600;cursor:pointer;">Abbrechen</button>
+      <button id="import-submit" style="flex:1;padding:15px;border-radius:16px;border:none;background:linear-gradient(135deg,#30D158,#25a244);color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(48,209,88,0.3);">Hinzufügen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG & DATA
+// ═══════════════════════════════════════
+const PW_HASH = '8a4f36e2'; // simple hash of Schalke04!
+const STORAGE_KEY = 'pottbrock_v4';
+const AUTH_KEY = 'pottbrock_auth';
+
+const COLUMNS = [
+  { id:'neu', label:'Nicht kontaktiert', shortLabel:'Neu', color:'#007AFF', icon:'📥' },
+  { id:'kontaktiert', label:'Kontaktiert', shortLabel:'Kont.', color:'#34C759', icon:'📞' },
+  { id:'nicht_erreicht', label:'Nicht erreicht', shortLabel:'N.err.', color:'#FF9500', icon:'📵' },
+  { id:'vorstellungsgespraech', label:'Vorstellungsgespräch', shortLabel:'VG', color:'#AF52DE', icon:'🤝' },
+  { id:'zusage', label:'Zusage', shortLabel:'Zusage', color:'#30D158', icon:'✅' },
+  { id:'absage', label:'Absage', shortLabel:'Absage', color:'#FF3B30', icon:'❌' },
+];
+
+const SAMPLE = [
+  { id:'1', name:'Harry Finanzerfahrungen', email:'harry@finanzerfahrungen.de', telefon:'+4915758480079', ausbildung:'ja', standort:'Oberhausen', anstellung:'Teilzeit', erreichbarkeit:'Nachmittags 13-18 Uhr', column:'neu', notes:'', createdAt:new Date().toISOString() },
+  { id:'2', name:'Lisa Müller', email:'lisa.mueller@gmail.com', telefon:'+4917612345678', ausbildung:'ja', standort:'Düsseldorf', anstellung:'Vollzeit', erreichbarkeit:'Vormittags 8-12 Uhr', column:'kontaktiert', notes:'Sehr freundlich, 3 Jahre Erfahrung.', createdAt:new Date(Date.now()-86400000).toISOString() },
+  { id:'3', name:'Mehmet Yilmaz', email:'m.yilmaz@web.de', telefon:'+4915198765432', ausbildung:'ja', standort:'Essen', anstellung:'Teilzeit', erreichbarkeit:'Flexibel', column:'vorstellungsgespraech', notes:'VG am 14.02. um 10 Uhr', createdAt:new Date(Date.now()-172800000).toISOString() },
+  { id:'4', name:'Sarah Weber', email:'s.weber@outlook.de', telefon:'+4916287654321', ausbildung:'ja', standort:'Duisburg', anstellung:'Vollzeit', erreichbarkeit:'Ganztags', column:'neu', notes:'', createdAt:new Date(Date.now()-3600000).toISOString() },
+];
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let applicants = [];
+let activeCol = 0;
+
+function loadData() {
+  try {
+    const s = localStorage.getItem(STORAGE_KEY);
+    applicants = s ? JSON.parse(s) : [...SAMPLE];
+  } catch { applicants = [...SAMPLE]; }
+}
+function saveData() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(applicants)); } catch {}
+}
+
+// ═══════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════
+function simpleHash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) { h = ((h << 5) - h + str.charCodeAt(i)) | 0; }
+  return (h >>> 0).toString(16);
+}
+
+function checkAuth() {
+  return localStorage.getItem(AUTH_KEY) === simpleHash('Schalke04!');
+}
+
+function doLogin(pw) {
+  if (pw === 'Schalke04!') {
+    localStorage.setItem(AUTH_KEY, simpleHash(pw));
+    return true;
+  }
+  return false;
+}
+
+function doLogout() {
+  localStorage.removeItem(AUTH_KEY);
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').classList.add('hidden');
+}
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function timeAgo(d) {
+  const diff = Date.now() - new Date(d).getTime();
+  const m = Math.floor(diff/60000);
+  if (m < 60) return m + 'm';
+  const h = Math.floor(m/60);
+  if (h < 24) return h + 'h';
+  return Math.floor(h/24) + 'd';
+}
+
+function initials(name) {
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2);
+}
+
+function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+function parseEmail(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const ex = (k) => { const l = lines.find(l => l.toLowerCase().startsWith(k+':')); return l ? l.substring(l.indexOf(':')+1).trim() : ''; };
+  const name = ex('name'), email = ex('email');
+  if (!name && !email) return null;
+  return {
+    id: Date.now().toString() + Math.random().toString(36).substr(2,5),
+    name: name||'Unbekannt', email, telefon: ex('telefon'), ausbildung: ex('ausbildung'),
+    standort: cap(ex('standort')), anstellung: cap(ex('anstellung')),
+    erreichbarkeit: ex('erreichbarkeit').replace(/_/g,' '),
+    column:'neu', notes:'', createdAt: new Date().toISOString(),
+  };
+}
+
+function cleanPhone(t) { return t.replace(/[^0-9]/g,''); }
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+function renderStatusBar() {
+  const bar = document.getElementById('status-bar');
+  bar.innerHTML = COLUMNS.map((col, i) => {
+    const count = applicants.filter(a => a.column === col.id).length;
+    const active = i === activeCol;
+    return `<button class="status-tab ${active?'active':''}" data-col="${i}"
+      style="${active ? '--tab-bg:'+col.color+'18' : ''}">
+      <div class="status-dot ${active?'':'inactive'}"
+        style="${active ? 'background:linear-gradient(135deg,'+col.color+','+col.color+'cc);color:#fff;box-shadow:0 2px 10px '+col.color+'40' : ''}">${count}</div>
+      <span class="status-label" style="color:${active ? col.color : 'rgba(0,0,0,0.32)'}">${col.shortLabel}</span>
+      <div class="status-indicator" style="background:${active ? col.color : 'transparent'}"></div>
+    </button>`;
+  }).join('');
+
+  bar.querySelectorAll('.status-tab').forEach(btn => {
+    btn.addEventListener('click', () => { activeCol = +btn.dataset.col; render(); });
+  });
+}
+
+function renderColumns() {
+  const track = document.getElementById('columns-track');
+  track.style.transform = `translateX(-${activeCol * 100}%)`;
+
+  track.innerHTML = COLUMNS.map(col => {
+    const items = applicants.filter(a => a.column === col.id);
+    return `<div class="column-pane">
+      <div class="column-header">
+        <span class="column-icon">${col.icon}</span>
+        <div>
+          <div class="column-title">${col.label}</div>
+          <div class="column-count">${items.length} Bewerber</div>
+        </div>
+      </div>
+      <div class="cards-list">
+        ${items.length === 0 ? `<div class="column-empty"><div class="column-empty-icon">${col.icon}</div>Keine Bewerber</div>` :
+          items.map(a => renderCard(a, col)).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Card click handlers
+  track.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.card-btn')) return;
+      openDetail(card.dataset.id);
+    });
+  });
+}
+
+function renderCard(a, col) {
+  return `<div class="card glass" data-id="${a.id}">
+    <div class="card-top">
+      <div class="card-avatar" style="background:linear-gradient(140deg,${col.color}30,${col.color}60);border:2px solid ${col.color}25;color:${col.color}">${initials(a.name)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="card-name">${a.name}</div>
+        <div class="card-meta">${a.standort} · ${a.anstellung}</div>
+      </div>
+      <div class="card-time">${timeAgo(a.createdAt)}</div>
+    </div>
+    <div class="card-actions">
+      <a href="tel:${a.telefon}" class="card-btn" style="background:${col.color}12;color:${col.color};border:1px solid ${col.color}20">📱 Anrufen</a>
+      <a href="https://wa.me/${cleanPhone(a.telefon)}" target="_blank" rel="noopener" class="card-btn" style="background:rgba(37,211,102,0.1);color:#25a244;border:1px solid rgba(37,211,102,0.18)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="#25a244"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WA</a>
+      <a href="mailto:${a.email}" class="card-btn" style="background:rgba(0,122,255,0.08);color:#007AFF;border:1px solid rgba(0,122,255,0.15)">✉️ Mail</a>
+      ${a.notes ? '<span style="margin-left:auto;font-size:13px;opacity:0.5">📝</span>' : ''}
+    </div>
+  </div>`;
+}
+
+function renderDots() {
+  document.getElementById('swipe-dots').innerHTML = COLUMNS.map((c,i) =>
+    `<div class="swipe-dot" style="width:${i===activeCol?22:7}px;background:${i===activeCol?c.color:'rgba(0,0,0,0.12)'};box-shadow:${i===activeCol?'0 1px 8px '+c.color+'40':'none'}"></div>`
+  ).join('');
+}
+
+function render() {
+  renderStatusBar();
+  renderColumns();
+  renderDots();
+  saveData();
+}
+
+// ═══════════════════════════════════════
+// DETAIL MODAL
+// ═══════════════════════════════════════
+function openDetail(id) {
+  const a = applicants.find(x => x.id === id);
+  if (!a) return;
+  const col = COLUMNS.find(c => c.id === a.column);
+  const modal = document.getElementById('detail-modal');
+  const sheet = document.getElementById('detail-sheet');
+
+  sheet.innerHTML = `
+    <div class="modal-handle"><div class="modal-handle-bar"></div></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px">
+      <div style="width:56px;height:56px;border-radius:28px;background:linear-gradient(140deg,${col.color}28,${col.color}55);border:2px solid ${col.color}20;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:700;color:${col.color}">${initials(a.name)}</div>
+      <div style="flex:1">
+        <h2 style="margin:0;font-size:21px;font-weight:700;letter-spacing:-0.03em">${a.name}</h2>
+        <div style="display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:12px;background:${col.color}14;color:${col.color};padding:4px 12px;border-radius:99px;font-weight:600">${col.icon} ${col.label}</div>
+      </div>
+    </div>
+    <div class="contact-row">
+      <a href="tel:${a.telefon}" class="contact-btn" style="background:#007AFF0c;border:1px solid #007AFF18;color:#007AFF"><span class="contact-icon">📱</span>Anrufen</a>
+      <a href="https://wa.me/${cleanPhone(a.telefon)}" target="_blank" rel="noopener" class="contact-btn" style="background:#25a2440c;border:1px solid #25a24418;color:#25a244"><span class="contact-icon">💬</span>WhatsApp</a>
+      <a href="mailto:${a.email}" class="contact-btn" style="background:#FF95000c;border:1px solid #FF950018;color:#FF9500"><span class="contact-icon">✉️</span>E-Mail</a>
+    </div>
+    <div class="info-grid">
+      <div><div class="info-label">📧 E-Mail</div><div class="info-value">${a.email||'—'}</div></div>
+      <div><div class="info-label">📱 Telefon</div><div class="info-value">${a.telefon||'—'}</div></div>
+      <div><div class="info-label">📍 Standort</div><div class="info-value">${a.standort||'—'}</div></div>
+      <div><div class="info-label">⏰ Erreichbar</div><div class="info-value">${a.erreichbarkeit||'—'}</div></div>
+      <div><div class="info-label">🎓 Ausbildung</div><div class="info-value">${a.ausbildung==='ja'?'Ja ✓':(a.ausbildung||'—')}</div></div>
+      <div><div class="info-label">💼 Anstellung</div><div class="info-value">${a.anstellung||'—'}</div></div>
+    </div>
+    <div style="margin-bottom:22px">
+      <div class="section-label">📝 Notizen</div>
+      <textarea id="detail-notes" class="notes-input" rows="3" placeholder="Notizen zum Bewerber...">${a.notes||''}</textarea>
+    </div>
+    <div style="margin-bottom:26px">
+      <div class="section-label">📋 Status verschieben</div>
+      <div class="status-pills">
+        ${COLUMNS.map(c => `<button class="status-pill" data-col="${c.id}"
+          style="border-color:${a.column===c.id?c.color:'rgba(0,0,0,0.06)'};background:${a.column===c.id?c.color+'14':'rgba(255,255,255,0.5)'};color:${a.column===c.id?c.color:'rgba(0,0,0,0.4)'}">${c.icon} ${c.shortLabel}</button>`).join('')}
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-save" id="detail-save">Speichern</button>
+      <button class="btn-delete" id="detail-delete">🗑</button>
+    </div>
+  `;
+
+  let selectedCol = a.column;
+
+  sheet.querySelectorAll('.status-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      selectedCol = pill.dataset.col;
+      sheet.querySelectorAll('.status-pill').forEach(p => {
+        const c = COLUMNS.find(x => x.id === p.dataset.col);
+        const active = p.dataset.col === selectedCol;
+        p.style.borderColor = active ? c.color : 'rgba(0,0,0,0.06)';
+        p.style.background = active ? c.color+'14' : 'rgba(255,255,255,0.5)';
+        p.style.color = active ? c.color : 'rgba(0,0,0,0.4)';
+      });
+    });
+  });
+
+  document.getElementById('detail-save').addEventListener('click', () => {
+    const notes = document.getElementById('detail-notes').value;
+    const idx = applicants.findIndex(x => x.id === id);
+    if (idx > -1) { applicants[idx].notes = notes; applicants[idx].column = selectedCol; }
+    modal.classList.add('hidden');
+    render();
+  });
+
+  document.getElementById('detail-delete').addEventListener('click', () => {
+    if (confirm('Bewerber wirklich löschen?')) {
+      applicants = applicants.filter(x => x.id !== id);
+      modal.classList.add('hidden');
+      render();
+    }
+  });
+
+  modal.classList.remove('hidden');
+  modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
+}
+
+// ═══════════════════════════════════════
+// SWIPE
+// ═══════════════════════════════════════
+function setupSwipe() {
+  const area = document.getElementById('swipe-area');
+  let startX = 0, startY = 0, startTime = 0;
+
+  area.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startTime = Date.now();
+  }, { passive: true });
+
+  area.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    const dt = Date.now() - startTime;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2 && dt < 500) {
+      if (dx < 0 && activeCol < COLUMNS.length - 1) { activeCol++; render(); }
+      if (dx > 0 && activeCol > 0) { activeCol--; render(); }
+    }
+  }, { passive: true });
+}
+
+// ═══════════════════════════════════════
+// IMPORT
+// ═══════════════════════════════════════
+function setupImport() {
+  document.getElementById('btn-import').addEventListener('click', () => {
+    document.getElementById('import-text').value = '';
+    document.getElementById('import-preview').style.display = 'none';
+    document.getElementById('import-modal').classList.remove('hidden');
+  });
+
+  document.getElementById('import-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'import-modal') e.target.classList.add('hidden');
+  });
+
+  document.getElementById('import-cancel').addEventListener('click', () => {
+    document.getElementById('import-modal').classList.add('hidden');
+  });
+
+  document.getElementById('import-submit').addEventListener('click', () => {
+    const text = document.getElementById('import-text').value;
+    if (!text.trim()) return;
+    const parsed = parseEmail(text);
+    if (!parsed) { alert('Konnte E-Mail nicht parsen.'); return; }
+    if (applicants.find(a => a.email === parsed.email)) {
+      alert(parsed.email + ' existiert bereits.');
+      return;
+    }
+    applicants.unshift(parsed);
+    activeCol = 0;
+    document.getElementById('import-modal').classList.add('hidden');
+    render();
+  });
+}
+
+// ═══════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════
+function setupLogin() {
+  const input = document.getElementById('pw-input');
+  const btn = document.getElementById('pw-btn');
+  const error = document.getElementById('pw-error');
+
+  function tryLogin() {
+    if (doLogin(input.value)) {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      loadData();
+      render();
+    } else {
+      error.textContent = 'Falsches Passwort';
+      input.value = '';
+      input.style.borderColor = 'rgba(255,59,48,0.5)';
+      setTimeout(() => { error.textContent = ''; input.style.borderColor = ''; }, 2000);
+    }
+  }
+
+  btn.addEventListener('click', tryLogin);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryLogin(); });
+  document.getElementById('btn-logout').addEventListener('click', doLogout);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  setupLogin();
+  setupSwipe();
+  setupImport();
+
+  if (checkAuth()) {
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    loadData();
+    render();
+  }
+});
+</script>
+</body>
+</html>
