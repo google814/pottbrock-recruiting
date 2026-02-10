@@ -53,3 +53,4 @@ Abmelden über das 🔒 Icon oben rechts.
 - localStorage für Datenpersistenz
 - CSS backdrop-filter für Glaseffekte
 - Touch-Events für Swipe-Navigation
+# pottbrock-recruiting
